@@ -1,6 +1,5 @@
 import React, { useReducer, useRef, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
-import useMouse from 'react-use/lib/useMouse';
 
 import {
   ADD_APP,
@@ -176,7 +175,6 @@ const reducer = (state, action = { type: '' }) => {
 function WinXP() {
   const [state, dispatch] = useReducer(reducer, initState);
   const ref = useRef(null);
-  const mouse = useMouse(ref);
   const focusedAppId = getFocusedAppId();
   const onFocusApp = useCallback(id => {
     dispatch({ type: FOCUS_APP, payload: id });
@@ -261,7 +259,7 @@ function WinXP() {
     if (e.target === e.currentTarget)
       dispatch({
         type: START_SELECT,
-        payload: { x: mouse.docX, y: mouse.docY },
+        payload: { x: e.pageX, y: e.pageY },
       });
   }
   function onMouseUpDesktop(e) {
@@ -296,11 +294,10 @@ function WinXP() {
         onDoubleClick={onDoubleClickIcon}
         displayFocus={state.focusing === FOCUSING.ICON}
         appSettings={appSettings}
-        mouse={mouse}
         selecting={state.selecting}
         setSelectedIcons={onIconsSelected}
       />
-      <DashedBox startPos={state.selecting} mouse={mouse} />
+      {state.selecting && <DashedBox startPos={state.selecting} />}
       <Windows
         apps={state.apps}
         onMouseDown={onFocusApp}
