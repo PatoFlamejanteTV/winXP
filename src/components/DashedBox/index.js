@@ -1,12 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-function DashedBox({ mouse, startPos }) {
+function DashedBox({ startPos }) {
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (startPos) {
+      setMouse({ x: startPos.x, y: startPos.y });
+    }
+    const onMouseMove = e => {
+      setMouse({ x: e.pageX, y: e.pageY });
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    return () => window.removeEventListener('mousemove', onMouseMove);
+  }, [startPos]);
+
   function getRect() {
     return {
-      x: Math.min(startPos.x, mouse.docX),
-      y: Math.min(startPos.y, mouse.docY),
-      w: Math.abs(startPos.x - mouse.docX),
-      h: Math.abs(startPos.y - mouse.docY),
+      x: Math.min(startPos.x, mouse.x),
+      y: Math.min(startPos.y, mouse.y),
+      w: Math.abs(startPos.x - mouse.x),
+      h: Math.abs(startPos.y - mouse.y),
     };
   }
   if (startPos) {

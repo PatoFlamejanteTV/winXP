@@ -6,29 +6,49 @@ function Icons({
   onMouseDown,
   onDoubleClick,
   displayFocus,
-  mouse,
   selecting,
   setSelectedIcons,
 }) {
   const [iconsRect, setIconsRect] = useState([]);
+
+  // Ref to hold the latest iconsRect to access it inside the event listener
+  const iconsRectRef = useRef(iconsRect);
+
+  useEffect(() => {
+    iconsRectRef.current = iconsRect;
+  }, [iconsRect]);
+
   function measure(rect) {
     if (iconsRect.find(r => r.id === rect.id)) return;
     setIconsRect(iconsRect => [...iconsRect, rect]);
   }
+
   useEffect(() => {
     if (!selecting) return;
-    const sx = Math.min(selecting.x, mouse.docX);
-    const sy = Math.min(selecting.y, mouse.docY);
-    const sw = Math.abs(selecting.x - mouse.docX);
-    const sh = Math.abs(selecting.y - mouse.docY);
-    const selectedIds = iconsRect
-      .filter(rect => {
-        const { x, y, w, h } = rect;
-        return x - sx < sw && sx - x < w && y - sy < sh && sy - y < h;
-      })
-      .map(icon => icon.id);
-    setSelectedIcons(selectedIds);
-  }, [iconsRect, setSelectedIcons, selecting, mouse.docX, mouse.docY]);
+
+    const handleMove = e => {
+      const mouseX = e.pageX;
+      const mouseY = e.pageY;
+
+      const sx = Math.min(selecting.x, mouseX);
+      const sy = Math.min(selecting.y, mouseY);
+      const sw = Math.abs(selecting.x - mouseX);
+      const sh = Math.abs(selecting.y - mouseY);
+
+      const selectedIds = iconsRectRef.current
+        .filter(rect => {
+          const { x, y, w, h } = rect;
+          return x - sx < sw && sx - x < w && y - sy < sh && sy - y < h;
+        })
+        .map(icon => icon.id);
+
+      setSelectedIcons(selectedIds);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    return () => window.removeEventListener('mousemove', handleMove);
+  }, [selecting, setSelectedIcons]); // Removed iconsRect from dependency to avoid re-binding
+
   return (
     <IconsContainer>
       {icons.map(icon => (
